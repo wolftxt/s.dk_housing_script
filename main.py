@@ -164,8 +164,19 @@ async def main():
         sorted_results = sorted(results, key=lambda x: x["queue"])
 
         # Step 5: Output results
+        # Positions according to https://www.s.dk/raad-og-vejledning/#toggle-id-10
+        map_to_position = {
+            "A": "1-10",
+            "B": "11-40",
+            "C": "41-100",
+            "D": "101-200",
+            "E": "201-400",
+            "F": "401-1000",
+            "G": "1001-"
+        }
+
         for dorm in sorted_results:
-            print(f"{dorm['queue']} | {dorm['name']}")
+            print(f"{dorm['queue']} ({map_to_position[dorm['queue']]}) | {dorm['name']}")
 
 if __name__ == "__main__":
     asyncio.run(main())
