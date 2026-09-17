@@ -27,7 +27,7 @@ async def login_and_save_state(page):
 
     # Save authentication state
     await page.context.storage_state(path=STORAGE_STATE_PATH)
-    print("Login successful. Session saved to 'state.json'.")
+    print("Session saved to 'state.json'.")
 
 
 async def load_all_buildings(page):
@@ -35,21 +35,18 @@ async def load_all_buildings(page):
     try:
         await page.goto(LOGIN_URL, wait_until="networkidle")
     except:
-      print("Your internet isn't working.")
+      print("s.dk is down or your internet isn't working.")
       exit()
 
     # Step 1: Click the CIU tab element to activate dorm listings
     ciu_selector = 'span:has-text("CIU - Centralindstillingsudvalget")'
-    try:
-        print("Selecting CIU tab...")
-        ciu_element = page.locator(ciu_selector).first
-        await ciu_element.wait_for(state="visible", timeout=10000)
 
-        # Click CIU tab (using evaluate click to bypass potential span overlay issues)
-        await ciu_element.evaluate("el => el.click()")
+    print("Selecting CIU tab...")
+    ciu_element = page.locator(ciu_selector).first
+    await ciu_element.wait_for(state="visible", timeout=2000)
 
-    except Exception as e:
-        print(f"Could not click CIU tab: {e}")
+    # Click CIU tab (using evaluate click to bypass potential span overlay issues)
+    await ciu_element.evaluate("el => el.click()")
 
     # Step 2: Continuously click 'Vis flere ejendomme'
     click_count = 0
@@ -126,6 +123,8 @@ async def scrape_with_semaphore(semaphore, context, url):
     async with semaphore:
         return await scrape_dorm_details(context, url)
 
+
+
 async def main():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -141,11 +140,20 @@ async def main():
             await login_and_save_state(temp_page)
             await temp_page.close()
 
-        main_page = await context.new_page()
-
         # Step 1: Load page and continuously click "Vis flere ejendomme"
-        print("Loading dorm listings...")
-        await load_all_buildings(main_page)
+        successfully_loaded = False
+        while not successfully_loaded:
+            main_page = await context.new_page()
+            print("Loading dorm listings...")
+            try:
+                await load_all_buildings(main_page)
+                successfully_loaded = True
+            except:
+                print("Session is not valid. You need to log in again.")
+                context = await browser.new_context()
+                temp_page = await context.new_page()
+                await login_and_save_state(temp_page)
+                await temp_page.close()
 
         # Step 2: Extract building links
         dorm_urls = await extract_dorm_links(main_page)
