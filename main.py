@@ -148,7 +148,7 @@ async def main():
             try:
                 await load_all_buildings(main_page)
                 successfully_loaded = True
-            except:
+            except Exception:
                 print("Session is not valid. You need to log in again.")
                 context = await browser.new_context()
                 temp_page = await context.new_page()
