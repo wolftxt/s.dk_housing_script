@@ -32,7 +32,11 @@ async def login_and_save_state(page):
 
 async def load_all_buildings(page):
     """Selects CIU tab and continuously clicks 'Vis flere ejendomme' until all dorms are rendered."""
-    await page.goto(LOGIN_URL, wait_until="networkidle")
+    try:
+        await page.goto(LOGIN_URL, wait_until="networkidle")
+    except:
+      print("Your internet isn't working.")
+      exit()
 
     # Step 1: Click the CIU tab element to activate dorm listings
     ciu_selector = 'span:has-text("CIU - Centralindstillingsudvalget")'
