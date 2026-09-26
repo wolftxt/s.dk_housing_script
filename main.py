@@ -184,7 +184,8 @@ async def main():
             "D": "101-200",
             "E": "201-400",
             "F": "401-1000",
-            "G": "1001-"
+            "G": "1001-",
+            "N/A": ""
         }
 
         for dorm in sorted_results:
